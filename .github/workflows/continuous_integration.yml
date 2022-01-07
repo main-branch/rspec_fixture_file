@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  continuous_integration_build:
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [2.7, 3.0, head]
+        operating-system: [ubuntu-latest]
+
+    name: Ruby ${{ matrix.ruby }} on ${{ matrix.operating-system }}
+
+    runs-on: ${{ matrix.operating-system }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+
+      - name: Report OS and Ruby Version
+        run: |
+          echo
+          echo "$ cat /etc/os-release"
+          cat /etc/os-release
+          echo
+          echo '$ uname -a'
+          uname -a
+          echo
+          echo '$ ruby --version'
+          ruby --version
+          echo
+
+      - name: Run Build
+        run: bundle exec rake default
